@@ -6076,10 +6076,11 @@ function ngReduxProvider() {
   var _reducer = undefined;
   var _middlewares = undefined;
   var _storeEnhancers = undefined;
+  var _firstStoreEnhancers = undefined;
   var _initialState = undefined;
   var _reducerIsObject = undefined;
 
-  this.createStoreWith = function (reducer, middlewares, storeEnhancers, initialState) {
+  this.createStoreWith = function (reducer, firstStoreEnhancers, middlewares, storeEnhancers, initialState) {
     invariant_1(index$5(reducer) || isObject(reducer), 'The reducer parameter passed to createStoreWith must be a Function or an Object. Instead received %s.', typeof reducer === 'undefined' ? 'undefined' : _typeof(reducer));
 
     invariant_1(!storeEnhancers || isArray(storeEnhancers), 'The storeEnhancers parameter passed to createStoreWith must be an Array. Instead received %s.', typeof storeEnhancers === 'undefined' ? 'undefined' : _typeof(storeEnhancers));
@@ -6087,8 +6088,9 @@ function ngReduxProvider() {
     _reducer = reducer;
     _reducerIsObject = isObject(reducer);
     _storeEnhancers = storeEnhancers;
+    _firstStoreEnhancers = firstStoreEnhancers;
     _middlewares = middlewares || [];
-    _initialState = initialState;
+    _initialState = initialState || {};
   };
 
   this.$get = function ($injector) {
@@ -6103,7 +6105,7 @@ function ngReduxProvider() {
     };
 
     var resolvedStoreEnhancer = index$8(_storeEnhancers, resolveStoreEnhancer);
-
+    var resolvedFirstEnhancers = index$8(_firstStoreEnhancers, resolveStoreEnhancer);
     if (_reducerIsObject) {
       var getReducerKey = function getReducerKey(key) {
         return isString(_reducer[key]) ? $injector.get(_reducer[key]) : _reducer[key];
@@ -6118,12 +6120,12 @@ function ngReduxProvider() {
       _reducer = combineReducers(reducersObj);
     }
 
-    var finalCreateStore = resolvedStoreEnhancer ? compose.apply(undefined, _toConsumableArray(resolvedStoreEnhancer))(createStore) : createStore;
-
     //digestMiddleware needs to be the last one.
     resolvedMiddleware.push(digestMiddleware($injector.get('$rootScope')));
 
-    var store = _initialState ? applyMiddleware.apply(undefined, _toConsumableArray(resolvedMiddleware))(finalCreateStore)(_reducer, _initialState) : applyMiddleware.apply(undefined, _toConsumableArray(resolvedMiddleware))(finalCreateStore)(_reducer);
+    var middleware = applyMiddleware.apply(undefined, _toConsumableArray(resolvedMiddleware));
+    var enhancer = compose.apply(undefined, _toConsumableArray(resolvedFirstEnhancers).concat([middleware], _toConsumableArray(resolvedStoreEnhancer)));
+    var store = createStore(_reducer, _initialState, enhancer);
 
     return assign({}, store, { connect: Connector(store) });
   };

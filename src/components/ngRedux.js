@@ -18,10 +18,11 @@ export default function ngReduxProvider() {
   let _reducer = undefined;
   let _middlewares = undefined;
   let _storeEnhancers = undefined;
+  let _firstStoreEnhancers = undefined;
   let _initialState = undefined;
   let _reducerIsObject = undefined;
 
-  this.createStoreWith = (reducer, middlewares, storeEnhancers, initialState) => {
+  this.createStoreWith = (reducer, firstStoreEnhancers, middlewares, storeEnhancers, initialState) => {
     invariant(
       isFunction(reducer) || isObject(reducer),
       'The reducer parameter passed to createStoreWith must be a Function or an Object. Instead received %s.',
@@ -36,9 +37,10 @@ export default function ngReduxProvider() {
 
     _reducer = reducer;
     _reducerIsObject = isObject(reducer);
-    _storeEnhancers = storeEnhancers
+    _storeEnhancers = storeEnhancers;
+    _firstStoreEnhancers = firstStoreEnhancers;
     _middlewares = middlewares || [];
-    _initialState = initialState;
+    _initialState = initialState || {};
   };
 
   this.$get = ($injector) => {
@@ -53,7 +55,7 @@ export default function ngReduxProvider() {
       : storeEnhancer;
 
     const resolvedStoreEnhancer = map(_storeEnhancers, resolveStoreEnhancer);
-
+    const resolvedFirstEnhancers = map(_firstStoreEnhancers, resolveStoreEnhancer);
     if(_reducerIsObject) {
       const getReducerKey = key => isString(_reducer[key])
         ? $injector.get(_reducer[key])
@@ -70,14 +72,12 @@ export default function ngReduxProvider() {
       _reducer = combineReducers(reducersObj);
     }
 
-    const finalCreateStore = resolvedStoreEnhancer ? compose(...resolvedStoreEnhancer)(createStore) : createStore;
-
     //digestMiddleware needs to be the last one.
     resolvedMiddleware.push(digestMiddleware($injector.get('$rootScope')));
 
-    const store = _initialState
-      ? applyMiddleware(...resolvedMiddleware)(finalCreateStore)(_reducer, _initialState)
-      : applyMiddleware(...resolvedMiddleware)(finalCreateStore)(_reducer);
+    const middleware = applyMiddleware(...resolvedMiddleware);
+    const enhancer = compose(...resolvedFirstEnhancers, middleware, ...resolvedStoreEnhancer);
+    const store =  createStore(_reducer, _initialState, enhancer);
 
     return assign({}, store, { connect: Connector(store) });
   };
