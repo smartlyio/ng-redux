@@ -50,7 +50,7 @@ export default function ngReduxProvider() {
     _storeEnhancers = storeEnhancers || [];
     _firstStoreEnhancers = firstStoreEnhancers;
     _middlewares = middlewares || [];
-    _initialState = initialState || {};
+    _initialState = initialState || {};
   };
 
   this.config = {
@@ -73,7 +73,7 @@ export default function ngReduxProvider() {
 
     const resolvedStoreEnhancer = map(_storeEnhancers, resolveStoreEnhancer);
     const resolvedFirstEnhancers = map(_firstStoreEnhancers, resolveStoreEnhancer);
-    if(_reducerIsObject) {
+    if (_reducerIsObject) {
       const getReducerKey = key => isString(_reducer[key])
         ? $injector.get(_reducer[key])
         : _reducer[key];
@@ -98,7 +98,7 @@ export default function ngReduxProvider() {
     const enhancer = compose(...resolvedFirstEnhancers, middleware, ...resolvedStoreEnhancer);
 
     // compose enhancers with middleware and create store.
-    const store = createStore(_reducer, _initialState, compose(middlewares, ...resolvedStoreEnhancer));
+    const store = createStore(_reducer, _initialState, compose(middlewares, enhancer));
 
     const mergedStore = assign({}, store, { connect: Connector(store) });
 

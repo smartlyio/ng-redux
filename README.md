@@ -1,3 +1,7 @@
+# Why Smartly's own fork?
+
+https://github.com/smartlyio/smartly-v1/pull/17145
+
 # ng-redux
 ###### Angular bindings for [Redux](https://github.com/gaearon/redux).
 

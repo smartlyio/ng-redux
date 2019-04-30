@@ -113,11 +113,12 @@ declare namespace ngRedux {
      * Creates Redux store.
      *
      * @param reducer
+     * @param firstStoreEnhancers
      * @param middlewares
      * @param storeEnhancers
      * @param initialState
      */
-    createStoreWith<S = any, I = any>(reducer: Reducer<S>, middlewares?: (Middleware | string)[], storeEnhancers?: Function[], initialState?: I): void;
+    createStoreWith<S = any, I = any>(reducer: Reducer<S>, firstStoreEnhancers: ((next: StoreCreator) => StoreCreator)[], middlewares?: (Middleware | string)[], storeEnhancers?: Function[], initialState?: I): void;
     /**
      * Initializes ngRedux with an existing Redux store.
      *
