@@ -2,10 +2,12 @@ import Connector from './connector';
 import invariant from 'invariant';
 import {createStore, applyMiddleware, compose, combineReducers} from 'redux';
 import digestMiddleware from './digestMiddleware';
+import providedStoreMiddleware from './providedStoreMiddleware';
+import wrapStore from './storeWrapper';
 
-import curry from 'lodash.curry';
-import isFunction from 'lodash.isfunction';
-import map from 'lodash.map';
+import curry from 'lodash/curry';
+import isFunction from 'lodash/isFunction';
+import map from 'lodash/map';
 
 const isArray = Array.isArray;
 
@@ -21,6 +23,14 @@ export default function ngReduxProvider() {
   let _firstStoreEnhancers = undefined;
   let _initialState = undefined;
   let _reducerIsObject = undefined;
+  let _providedStore = undefined;
+
+  this.provideStore = (store, middlewares = [], storeEnhancers) => {
+    _providedStore = store;
+    _reducer = (state, action) => action.payload;
+    _storeEnhancers = storeEnhancers;
+    _middlewares = [...middlewares, providedStoreMiddleware(store)];
+  }
 
   this.createStoreWith = (reducer, firstStoreEnhancers, middlewares, storeEnhancers, initialState) => {
     invariant(
@@ -37,10 +47,17 @@ export default function ngReduxProvider() {
 
     _reducer = reducer;
     _reducerIsObject = isObject(reducer);
-    _storeEnhancers = storeEnhancers;
+    _storeEnhancers = storeEnhancers || [];
     _firstStoreEnhancers = firstStoreEnhancers;
     _middlewares = middlewares || [];
     _initialState = initialState || {};
+  };
+
+  this.config = {
+    debounce: {
+      wait: undefined,
+      maxWait: undefined,
+    },
   };
 
   this.$get = ($injector) => {
@@ -72,14 +89,22 @@ export default function ngReduxProvider() {
       _reducer = combineReducers(reducersObj);
     }
 
-    //digestMiddleware needs to be the last one.
-    resolvedMiddleware.push(digestMiddleware($injector.get('$rootScope')));
+    // digestMiddleware needs to be the last one.
+    resolvedMiddleware.push(digestMiddleware($injector.get('$rootScope'), this.config.debounce));
 
-    const middleware = applyMiddleware(...resolvedMiddleware);
+    // combine middleware into a store enhancer.
+    const middlewares = applyMiddleware(...resolvedMiddleware);
+
     const enhancer = compose(...resolvedFirstEnhancers, middleware, ...resolvedStoreEnhancer);
-    const store =  createStore(_reducer, _initialState, enhancer);
 
-    return assign({}, store, { connect: Connector(store) });
+    // compose enhancers with middleware and create store.
+    const store = createStore(_reducer, _initialState, compose(middlewares, ...resolvedStoreEnhancer));
+
+    const mergedStore = assign({}, store, { connect: Connector(store) });
+
+    if (_providedStore) wrapStore(_providedStore, mergedStore);
+
+    return mergedStore;
   };
 
   this.$get.$inject = ['$injector'];
