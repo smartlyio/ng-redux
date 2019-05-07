@@ -1,3 +1,10 @@
+# Why our own Fork?
+- Includes ES6 module compatibility https://github.com/angular-redux/ng-redux/pull/217
+- Includes a built version of the library
+  - Removed `lib` from `.gitignore`, remember to run `npm install` and commit the end results
+  - Version bump
+  - Update package-lock.json
+
 # ng-redux
 ###### Angular bindings for [Redux](https://github.com/gaearon/redux).
 
