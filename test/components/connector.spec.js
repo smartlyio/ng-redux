@@ -114,6 +114,14 @@ describe('Connector', () => {
     expect(receivedDispatch).toBe(store.dispatch);
   });
 
+  it('Should allow ES6 modules', () => {
+    // The tests are run in Node, so we are unable to use actual ES6 modules. We get quite
+    // close by emulating it
+    const fakeModule = new Number(1);
+    fakeModule.prop = () => {};
+    expect(connect(() => ({}), fakeModule)(targetObj)).toNotThrow();
+  });
+
   it('Should provide state slice, bound actions and previous state slice to target (function)', () => {
     const targetFunc = sinon.spy();
 
