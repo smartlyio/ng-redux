@@ -117,7 +117,8 @@ describe('Connector', () => {
   it('Should allow ES6 modules', () => {
     // The tests are run in Node, so we are unable to use actual ES6 modules. We get quite
     // close by emulating it
-    const fakeModule = new Number(1);
+    class FakeModule {};
+    const fakeModule = new FakeModule();
     fakeModule.prop = () => {};
     expect(connect(() => ({}), fakeModule)(targetObj)).toNotThrow();
   });
