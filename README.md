@@ -2,8 +2,11 @@
 
 ## Why our own fork?
 
-This build includes [a fix for the ng-redux, which has not been merged yet](https://github.com/angular-redux/ng-redux/pull/217).
+This build includes
+* [a fix which allows using ES6 modules](https://github.com/angular-redux/ng-redux/pull/217)
+* [a change which adds a callback when creating a store, so you can pass your own enhancer](https://github.com/angular-redux/ng-redux/pull/218)
 When the issue gets solved on the main repository, let's remove our fork and start using it again.
+
 
 ###### Angular bindings for [Redux](https://github.com/gaearon/redux).
 
