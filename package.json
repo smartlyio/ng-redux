@@ -1,6 +1,6 @@
 {
-  "name": "ng-redux",
-  "version": "4.2.0",
+  "name": "@smartly/ng-redux",
+  "version": "4.2.1",
   "description": "Redux bindings for Angular.js",
   "main": "lib/ng-redux.js",
   "module": "es/ng-redux.js",

@@ -1,4 +1,9 @@
 # ng-redux
+
+## Why our own fork?
+
+This build includes [a fix for the ng-redux, which has not been merged yet](https://github.com/angular-redux/ng-redux/pull/217).
+
 ###### Angular bindings for [Redux](https://github.com/gaearon/redux).
 
 For Angular 2+ see [angular-redux/store](https://github.com/angular-redux/store) -- made by the same people that started `ng-redux`.
